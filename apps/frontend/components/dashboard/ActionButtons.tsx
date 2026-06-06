@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { activateCard } from '@/actions/card.actions'
 
 export function ActionButtons({
   cardId,
@@ -16,10 +17,13 @@ export function ActionButtons({
   async function handleActivateCard() {
     setLoading(true)
     setError(null)
-    await new Promise(r => setTimeout(r, 800))
-    setCardStatus('active')
+    const result = await activateCard(cardId)
+    if (result.ok) {
+      setCardStatus(result.data.status)
+    } else {
+      setError(result.message)
+    }
     setLoading(false)
-    void cardId
   }
 
   return (
