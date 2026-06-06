@@ -1,0 +1,12 @@
+node_modules
+.env
+.env.local
+.env.aws
+.next
+dist
+build
+.DS_Store
+.yarn
+.serverless
+*.tsbuildinfo
+next-env.d.ts
