@@ -2,13 +2,14 @@ import type { APIGatewayEvent } from 'aws-lambda'
 import { extractAuthContext } from './middleware/auth'
 import { ok, notFound, errorResponse } from './utils/response'
 import { badRequest } from './errors/httpErrors'
+import { getDashboard } from './services/dashboard.service'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export const dashboardHandler = async (event: APIGatewayEvent) => {
   try {
-    extractAuthContext(event)
-    return ok({ message: 'coming soon' })
+    const auth = extractAuthContext(event)
+    return ok(await getDashboard(auth))
   } catch (err) {
     return errorResponse(err)
   }
