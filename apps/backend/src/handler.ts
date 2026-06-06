@@ -5,6 +5,7 @@ import { badRequest } from './errors/httpErrors'
 import { getDashboard } from './services/dashboard.service'
 import { getTransactions } from './services/transactions.service'
 import { getInvoice } from './services/invoices.service'
+import { getCard, activateCard } from './services/cards.service'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -39,14 +40,26 @@ export const invoiceHandler = async (event: APIGatewayEvent) => {
   }
 }
 
+export const getCardHandler = async (event: APIGatewayEvent) => {
+  try {
+    const cardId = event.pathParameters?.id
+    if (!cardId) return notFound('Card not found')
+    if (!UUID_RE.test(cardId)) throw badRequest('cardId must be a valid UUID')
+    const auth = extractAuthContext(event)
+    return ok(await getCard(cardId, auth))
+  } catch (err) {
+    return errorResponse(err)
+  }
+}
+
 export const activateCardHandler = async (event: APIGatewayEvent) => {
   try {
-    const body = JSON.parse(event.body ?? '{}')
+    const body   = JSON.parse(event.body ?? '{}')
     const cardId = body.cardId
     if (!cardId) return notFound('Card not found')
     if (!UUID_RE.test(cardId)) throw badRequest('cardId must be a valid UUID')
-    extractAuthContext(event)
-    return ok({ message: 'coming soon' })
+    const auth = extractAuthContext(event)
+    return ok(await activateCard(cardId, auth))
   } catch (err) {
     return errorResponse(err)
   }
