@@ -1,7 +1,12 @@
-import { describe, it } from 'vitest'
+import { describe, it, vi } from 'vitest'
 import request from 'supertest'
 import { app } from '../../app'
 import { signToken, TEST_COMPANY_ID, TEST_CARD_ID } from '../../test/helpers'
+
+vi.mock('../../services/cards.service', () => ({
+  getCard:      vi.fn().mockResolvedValue({ id: 'cccccccc-0000-0000-0000-000000000003', status: 'inactive' }),
+  activateCard: vi.fn().mockResolvedValue({ id: 'cccccccc-0000-0000-0000-000000000003', status: 'active' }),
+}))
 
 describe('POST /cards/activate', () => {
   it('returns 401 when no Authorization header is provided', async () => {
