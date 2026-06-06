@@ -3,7 +3,19 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "deploy:dev": "echo \"TODO: configure in infra PR\"",
-    "deploy:prod": "echo \"TODO: configure in infra PR\""
+    "deploy:dev": "cd .. && serverless deploy --stage dev",
+    "deploy:prod": "cd .. && serverless deploy --stage prod",
+    "remove:dev": "cd .. && serverless remove --stage dev",
+    "offline": "cd .. && serverless offline --stage dev",
+    "logs:dashboard": "cd .. && serverless logs --function dashboard --stage dev --tail",
+    "logs:transactions": "cd .. && serverless logs --function transactions --stage dev --tail",
+    "logs:activateCard": "cd .. && serverless logs --function activateCard --stage dev --tail",
+    "info": "cd .. && serverless info --stage dev"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "serverless": "^3.38.0",
+    "serverless-esbuild": "^1.52.0",
+    "serverless-offline": "^13.3.0"
   }
 }
