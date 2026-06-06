@@ -1,5 +1,6 @@
 import {
   pgTable,
+  pgEnum,
   uuid,
   varchar,
   char,
@@ -10,6 +11,9 @@ import {
   date,
 } from 'drizzle-orm/pg-core'
 
+export const cardStatusEnum  = pgEnum('card_status',  ['active', 'inactive'])
+export const cardNetworkEnum = pgEnum('card_network',  ['visa', 'mastercard'])
+
 export const companies = pgTable('companies', {
   id:        uuid('id').primaryKey().defaultRandom(),
   name:      varchar('name', { length: 255 }).notNull(),
@@ -19,17 +23,19 @@ export const companies = pgTable('companies', {
 export const cards = pgTable('cards', {
   id:             uuid('id').primaryKey().defaultRandom(),
   companyId:      uuid('company_id').notNull().references(() => companies.id),
-  status:         varchar('status', { length: 10 }).notNull().default('inactive'),
+  status:         cardStatusEnum('status').notNull().default('inactive'),
   last4Digits:    char('last4_digits', { length: 4 }).notNull(),
   expiryMonth:    smallint('expiry_month').notNull(),
   expiryYear:     smallint('expiry_year').notNull(),
   cardholderName: varchar('cardholder_name', { length: 100 }).notNull(),
-  network:        varchar('network', { length: 20 }).notNull(),
+  network:        cardNetworkEnum('network').notNull(),
   cardImageUrl:   text('card_image_url'),
   encryptedPan:   text('encrypted_pan').notNull(),
   createdAt:      timestamp('created_at').notNull().defaultNow(),
   updatedAt:      timestamp('updated_at').notNull().defaultNow(),
 })
+
+export const invoiceStatusEnum = pgEnum('invoice_status', ['pending', 'paid', 'overdue'])
 
 export const creditLimits = pgTable('credit_limits', {
   id:         uuid('id').primaryKey().defaultRandom(),
@@ -46,7 +52,7 @@ export const invoices = pgTable('invoices', {
   dueDate:   date('due_date').notNull(),
   amount:    integer('amount').notNull(),
   currency:  char('currency', { length: 3 }).notNull(),
-  status:    varchar('status', { length: 10 }).notNull().default('pending'),
+  status:    invoiceStatusEnum('status').notNull().default('pending'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
