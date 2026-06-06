@@ -1,0 +1,22 @@
+version: 1
+applications:
+  - frontend:
+      phases:
+        preBuild:
+          commands:
+            - corepack enable
+            - node --version
+            - yarn --version
+            - yarn install
+        build:
+          commands:
+            - yarn workspace @qred/frontend build
+      artifacts:
+        baseDirectory: .next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+          - apps/frontend/.next/cache/**/*
+    appRoot: apps/frontend
