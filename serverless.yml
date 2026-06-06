@@ -13,6 +13,7 @@ provider:
     DB_NAME: ${ssm:/qred/${self:provider.stage}/db/name}
     DB_USER: ${ssm:/qred/${self:provider.stage}/db/user}
     DB_PASSWORD: ${ssm:/qred/${self:provider.stage}/db/password}
+    JWT_SECRET: ${ssm:/qred/${self:provider.stage}/jwt-secret}
   vpc:
     securityGroupIds:
       - ${ssm:/qred/${self:provider.stage}/vpc/lambda-sg-id}
