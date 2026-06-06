@@ -1,0 +1,9 @@
+{
+  "name": "@qred/infrastructure",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "deploy:dev": "echo \"TODO: configure in infra PR\"",
+    "deploy:prod": "echo \"TODO: configure in infra PR\""
+  }
+}
