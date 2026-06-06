@@ -3,6 +3,7 @@ import { extractAuthContext } from './middleware/auth'
 import { ok, notFound, errorResponse } from './utils/response'
 import { badRequest } from './errors/httpErrors'
 import { getDashboard } from './services/dashboard.service'
+import { getTransactions } from './services/transactions.service'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -17,8 +18,10 @@ export const dashboardHandler = async (event: APIGatewayEvent) => {
 
 export const transactionsHandler = async (event: APIGatewayEvent) => {
   try {
-    extractAuthContext(event)
-    return ok({ message: 'coming soon' })
+    const auth  = extractAuthContext(event)
+    const page  = Math.max(1, Number(event.queryStringParameters?.page  ?? 1))
+    const limit = Math.min(100, Math.max(1, Number(event.queryStringParameters?.limit ?? 20)))
+    return ok(await getTransactions(auth, page, limit))
   } catch (err) {
     return errorResponse(err)
   }
