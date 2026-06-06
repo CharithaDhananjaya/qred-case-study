@@ -4,6 +4,21 @@ A full-stack company dashboard for Qred's credit card product.
 
 ---
 
+## 📋 Contents
+
+- [⚙️ Backend architecture](#️-backend-architecture)
+- [🗄️ Database](#️-database)
+  - [Schema](#schema)
+  - [Local setup](#local-setup)
+  - [Migrations](#migrations)
+  - [Seed data](#seed-data)
+- [📡 API endpoints](#-api-endpoints)
+- [🔐 Auth](#-auth)
+- [🚀 Local auth setup](#-local-auth-setup)
+- [🧪 Tests](#-tests)
+
+---
+
 ## ⚙️ Backend architecture
 
 The backend runs in two modes from the same codebase — no duplication of business logic.
@@ -21,6 +36,141 @@ The backend runs in two modes from the same codebase — no duplication of busin
 ```
 
 Both paths share the same service and query layers (coming in feature PRs). Swapping between them is a matter of entry point only — `server.ts` for local, `handler.ts` exports for Lambda.
+
+---
+
+## 🗄️ Database
+
+### Schema
+
+Five tables, scoped by `company_id`. All monetary amounts are stored in øre/cents (integer) — `formatCurrency` divides by 100 for display.
+
+```mermaid
+erDiagram
+    companies {
+        uuid id PK
+        varchar name
+        timestamp created_at
+    }
+
+    cards {
+        uuid id PK
+        uuid company_id FK
+        card_status status
+        char last4_digits
+        smallint expiry_month
+        smallint expiry_year
+        varchar cardholder_name
+        card_network network
+        text card_image_url
+        text encrypted_pan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    credit_limits {
+        uuid id PK
+        uuid company_id FK "unique"
+        integer total_limit
+        char currency
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    invoices {
+        uuid id PK
+        uuid company_id FK
+        date due_date
+        integer amount
+        char currency
+        invoice_status status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    transactions {
+        uuid id PK
+        uuid card_id FK
+        text description
+        integer amount
+        char currency
+        varchar category
+        timestamp created_at
+    }
+
+    companies ||--o{ cards : "has"
+    companies ||--|| credit_limits : "has one"
+    companies ||--o{ invoices : "has"
+    cards ||--o{ transactions : "has"
+```
+
+**Enums**
+
+| Type | Values |
+|------|--------|
+| `card_status` | `active`, `inactive` |
+| `card_network` | `visa`, `mastercard` |
+| `invoice_status` | `pending`, `paid`, `overdue` |
+
+**Indexes**
+
+| Index | Columns |
+|-------|---------|
+| `cards_company_id_idx` | `cards.company_id` |
+| `credit_limits_company_id_idx` | `credit_limits.company_id` |
+| `invoices_company_id_status_idx` | `invoices.company_id, status` |
+| `transactions_card_id_idx` | `transactions.card_id` |
+| `transactions_created_at_idx` | `transactions.created_at` |
+
+---
+
+### Local setup
+
+Start the database:
+
+```bash
+docker compose up -d
+```
+
+---
+
+### Migrations
+
+Migrations are managed with [Drizzle Kit](https://orm.drizzle.team/kit-docs/overview). The schema source of truth is `apps/backend/src/db/schema.ts`.
+
+```bash
+# Apply all pending migrations
+yarn workspace @qred/backend db:migrate
+
+# Generate a new migration after changing schema.ts
+yarn workspace @qred/backend db:generate
+```
+
+Three migrations run in order:
+
+| File | What it does |
+|------|-------------|
+| `0000_sour_scream.sql` | Creates all tables with varchar columns |
+| `0001_shocking_silver_samurai.sql` | Converts status and network columns to pg enum types |
+| `0002_sloppy_lady_deathstrike.sql` | Adds query indexes |
+
+---
+
+### Seed data
+
+```bash
+yarn workspace @qred/backend db:seed
+```
+
+Seeds one company (`Acme AB`), one card, a credit limit, one pending invoice, and 20 transactions across three months. Fixed UUIDs make it idempotent — safe to rerun.
+
+The seeded `companyId` (`a0000000-0000-0000-0000-000000000001`) matches the dev JWT token, so after seeding you can generate a token and immediately hit real data:
+
+```bash
+yarn workspace @qred/backend token:generate
+curl http://localhost:4000/dashboard \
+  -H "Authorization: Bearer <token>"
+```
 
 ---
 
@@ -81,8 +231,6 @@ The token is scoped to a fixed dev `companyId` (`a0000000-0000-0000-0000-0000000
 curl http://localhost:4000/dashboard \
   -H "Authorization: Bearer <token from step 2>"
 ```
-
-Expected response while services are still being implemented: `{ "message": "coming soon" }`
 
 ---
 
