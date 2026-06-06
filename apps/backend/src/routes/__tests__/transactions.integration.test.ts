@@ -31,4 +31,25 @@ describe('GET /transactions', () => {
       .set('Authorization', `Bearer ${signToken(TEST_COMPANY_ID)}`)
       .expect(200)
   })
+
+  it('returns 400 when page is 0', async () => {
+    await request(app)
+      .get('/transactions?page=0')
+      .set('Authorization', `Bearer ${signToken(TEST_COMPANY_ID)}`)
+      .expect(400)
+  })
+
+  it('returns 400 when limit is 0', async () => {
+    await request(app)
+      .get('/transactions?limit=0')
+      .set('Authorization', `Bearer ${signToken(TEST_COMPANY_ID)}`)
+      .expect(400)
+  })
+
+  it('returns 400 when page is not a number', async () => {
+    await request(app)
+      .get('/transactions?page=abc')
+      .set('Authorization', `Bearer ${signToken(TEST_COMPANY_ID)}`)
+      .expect(400)
+  })
 })
