@@ -20,6 +20,23 @@ provider:
       - ${ssm:/qred/${self:provider.stage}/vpc/subnet-id-1}
       - ${ssm:/qred/${self:provider.stage}/vpc/subnet-id-2}
 
+functions:
+  dashboard:
+    handler: apps/backend/src/handler.dashboardHandler
+    events:
+      - http:
+          path: dashboard
+          method: get
+          cors: true
+
+  transactions:
+    handler: apps/backend/src/handler.transactionsHandler
+    events:
+      - http:
+          path: transactions
+          method: get
+          cors: true
+
 plugins:
   - serverless-esbuild
   - serverless-offline
