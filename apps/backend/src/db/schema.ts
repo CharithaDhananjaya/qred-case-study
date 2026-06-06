@@ -1,6 +1,5 @@
 import {
   pgTable,
-  pgEnum,
   uuid,
   varchar,
   char,
@@ -9,11 +8,7 @@ import {
   text,
   timestamp,
   date,
-  index,
 } from 'drizzle-orm/pg-core'
-
-export const cardStatusEnum  = pgEnum('card_status',  ['active', 'inactive'])
-export const cardNetworkEnum = pgEnum('card_network',  ['visa', 'mastercard'])
 
 export const companies = pgTable('companies', {
   id:        uuid('id').primaryKey().defaultRandom(),
@@ -24,21 +19,17 @@ export const companies = pgTable('companies', {
 export const cards = pgTable('cards', {
   id:             uuid('id').primaryKey().defaultRandom(),
   companyId:      uuid('company_id').notNull().references(() => companies.id),
-  status:         cardStatusEnum('status').notNull().default('inactive'),
+  status:         varchar('status', { length: 10 }).notNull().default('inactive'),
   last4Digits:    char('last4_digits', { length: 4 }).notNull(),
   expiryMonth:    smallint('expiry_month').notNull(),
   expiryYear:     smallint('expiry_year').notNull(),
   cardholderName: varchar('cardholder_name', { length: 100 }).notNull(),
-  network:        cardNetworkEnum('network').notNull(),
+  network:        varchar('network', { length: 20 }).notNull(),
   cardImageUrl:   text('card_image_url'),
   encryptedPan:   text('encrypted_pan').notNull(),
   createdAt:      timestamp('created_at').notNull().defaultNow(),
   updatedAt:      timestamp('updated_at').notNull().defaultNow(),
-}, t => [
-  index('cards_company_id_idx').on(t.companyId),
-])
-
-export const invoiceStatusEnum = pgEnum('invoice_status', ['pending', 'paid', 'overdue'])
+})
 
 export const creditLimits = pgTable('credit_limits', {
   id:         uuid('id').primaryKey().defaultRandom(),
@@ -47,9 +38,7 @@ export const creditLimits = pgTable('credit_limits', {
   currency:   char('currency', { length: 3 }).notNull(),
   createdAt:  timestamp('created_at').notNull().defaultNow(),
   updatedAt:  timestamp('updated_at').notNull().defaultNow(),
-}, t => [
-  index('credit_limits_company_id_idx').on(t.companyId),
-])
+})
 
 export const invoices = pgTable('invoices', {
   id:        uuid('id').primaryKey().defaultRandom(),
@@ -57,12 +46,10 @@ export const invoices = pgTable('invoices', {
   dueDate:   date('due_date').notNull(),
   amount:    integer('amount').notNull(),
   currency:  char('currency', { length: 3 }).notNull(),
-  status:    invoiceStatusEnum('status').notNull().default('pending'),
+  status:    varchar('status', { length: 10 }).notNull().default('pending'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-}, t => [
-  index('invoices_company_id_status_idx').on(t.companyId, t.status),
-])
+})
 
 export const transactions = pgTable('transactions', {
   id:          uuid('id').primaryKey().defaultRandom(),
@@ -72,7 +59,4 @@ export const transactions = pgTable('transactions', {
   currency:    char('currency', { length: 3 }).notNull(),
   category:    varchar('category', { length: 50 }),
   createdAt:   timestamp('created_at').notNull().defaultNow(),
-}, t => [
-  index('transactions_card_id_idx').on(t.cardId),
-  index('transactions_created_at_idx').on(t.createdAt),
-])
+})
