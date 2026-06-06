@@ -8,7 +8,12 @@
     "start": "node dist/server.js",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "token:generate": "ts-node scripts/generate-token.ts"
+    "token:generate": "ts-node scripts/generate-token.ts",
+    "test": "vitest run",
+    "test:unit": "vitest run unit",
+    "test:integration": "vitest run integration",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "@qred/shared": "*",
@@ -26,9 +31,13 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.11.0",
+    "@types/supertest": "^7.2.0",
+    "@vitest/ui": "3.2.6",
     "drizzle-kit": "^0.27.0",
+    "supertest": "^7.2.2",
     "ts-node": "^10.9.0",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^3.0.0"
   }
 }
