@@ -4,20 +4,40 @@ A full-stack company dashboard for Qred's credit card product.
 
 ---
 
-## API Endpoints
+## ⚙️ Backend architecture
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/dashboard` | Company overview — card, credit limit, latest transactions, invoice flag |
-| `GET` | `/transactions` | Paginated transaction history (`?page=1&limit=20`) |
-| `GET` | `/invoice` | Most recent invoice with embedded card details |
-| `POST` | `/cards/activate` | Activate an inactive card (`{ cardId }` in request body) |
+The backend runs in two modes from the same codebase — no duplication of business logic.
 
-All endpoints require a `Bearer` token. Locally they are served by Express on port 4000. On AWS they are individual Lambda functions behind API Gateway.
+```
+🖥️  Local dev
+    ts-node-dev
+      └── server.ts          loads env, starts Express on :4000
+            └── app.ts        mounts middleware + routes
+                  └── routes/*.route.ts   handles HTTP, calls services
+
+☁️  AWS
+    API Gateway
+      └── handler.ts         one export per Lambda function, calls services
+```
+
+Both paths share the same service and query layers (coming in feature PRs). Swapping between them is a matter of entry point only — `server.ts` for local, `handler.ts` exports for Lambda.
 
 ---
 
-## Auth
+## 📡 API endpoints
+
+| Method | Path | Lambda handler | Description |
+|--------|------|----------------|-------------|
+| 🟢 `GET` | `/dashboard` | `dashboardHandler` | Company overview — card, credit limit, latest transactions, invoice flag |
+| 🟢 `GET` | `/transactions` | `transactionsHandler` | Paginated transaction history (`?page=1&limit=20`) |
+| 🟢 `GET` | `/invoice` | `invoiceHandler` | Most recent invoice with embedded card details |
+| 🔵 `POST` | `/cards/activate` | `activateCardHandler` | Activate an inactive card (`{ cardId }` in request body) |
+
+All endpoints require a `Bearer` token.
+
+---
+
+## 🔐 Auth
 
 Authentication uses JWT Bearer tokens. The token carries `companyId` in its claims — the backend always reads `companyId` from the verified token, never from URL params or query strings. This prevents insecure direct object reference (IDOR) attacks where a caller could access another company's data by changing an ID in the URL.
 
@@ -25,7 +45,7 @@ Authentication uses JWT Bearer tokens. The token carries `companyId` in its clai
 
 ---
 
-## Local auth setup
+## 🚀 Local auth setup
 
 **1. Add a JWT secret to your envs**
 
