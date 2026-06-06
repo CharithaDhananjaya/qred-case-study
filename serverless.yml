@@ -37,6 +37,22 @@ functions:
           method: get
           cors: true
 
+  invoice:
+    handler: apps/backend/src/handler.invoiceHandler
+    events:
+      - http:
+          path: invoice
+          method: get
+          cors: true
+
+  activateCard:
+    handler: apps/backend/src/handler.activateCardHandler
+    events:
+      - http:
+          path: cards/activate
+          method: post
+          cors: true
+
 plugins:
   - serverless-esbuild
   - serverless-offline
@@ -58,4 +74,4 @@ resources:
   Outputs:
     ApiGatewayUrl:
       Value: !Sub 'https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${self:provider.stage}'
-      Description: API Gateway base URL — set as API_URL in Amplify console
+      Description: API Gateway base URL — set as NEXT_PUBLIC_API_URL in frontend 
