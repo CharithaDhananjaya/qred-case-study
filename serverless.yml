@@ -1,0 +1,77 @@
+service: qred-case-study
+
+provider:
+  name: aws
+  runtime: nodejs24.x
+  region: eu-north-1
+  stage: ${opt:stage, 'dev'}
+  profile: qred
+  environment:
+    NODE_ENV: production
+    DB_HOST: ${ssm:/qred/${self:provider.stage}/db/host}
+    DB_PORT: '5432'
+    DB_NAME: ${ssm:/qred/${self:provider.stage}/db/name}
+    DB_USER: ${ssm:/qred/${self:provider.stage}/db/user}
+    DB_PASSWORD: ${ssm:/qred/${self:provider.stage}/db/password}
+  vpc:
+    securityGroupIds:
+      - ${ssm:/qred/${self:provider.stage}/vpc/lambda-sg-id}
+    subnetIds:
+      - ${ssm:/qred/${self:provider.stage}/vpc/subnet-id-1}
+      - ${ssm:/qred/${self:provider.stage}/vpc/subnet-id-2}
+
+functions:
+  dashboard:
+    handler: apps/backend/src/handler.dashboardHandler
+    events:
+      - http:
+          path: dashboard
+          method: get
+          cors: true
+
+  transactions:
+    handler: apps/backend/src/handler.transactionsHandler
+    events:
+      - http:
+          path: transactions
+          method: get
+          cors: true
+
+  invoice:
+    handler: apps/backend/src/handler.invoiceHandler
+    events:
+      - http:
+          path: invoice
+          method: get
+          cors: true
+
+  activateCard:
+    handler: apps/backend/src/handler.activateCardHandler
+    events:
+      - http:
+          path: cards/activate
+          method: post
+          cors: true
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+
+custom:
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    target: node24
+    platform: node
+    concurrency: 10
+    alias:
+      '@qred/shared': './packages/shared/index.ts'
+  serverless-offline:
+    httpPort: 4001
+
+resources:
+  Outputs:
+    ApiGatewayUrl:
+      Value: !Sub 'https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${self:provider.stage}'
+      Description: API Gateway base URL — set as NEXT_PUBLIC_API_URL in frontend 
