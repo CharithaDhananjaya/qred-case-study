@@ -4,6 +4,7 @@ import { ok, notFound, errorResponse } from './utils/response'
 import { badRequest } from './errors/httpErrors'
 import { getDashboard } from './services/dashboard.service'
 import { getTransactions } from './services/transactions.service'
+import { getInvoice } from './services/invoices.service'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -29,8 +30,10 @@ export const transactionsHandler = async (event: APIGatewayEvent) => {
 
 export const invoiceHandler = async (event: APIGatewayEvent) => {
   try {
-    extractAuthContext(event)
-    return ok({ message: 'coming soon' })
+    const auth = extractAuthContext(event)
+    const data = await getInvoice(auth)
+    if (!data) return notFound('Invoice not found')
+    return ok(data)
   } catch (err) {
     return errorResponse(err)
   }
