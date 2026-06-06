@@ -236,6 +236,8 @@ curl http://localhost:4000/dashboard \
 
 ## 🧪 Tests
 
+### Backend
+
 Unit and integration tests run with [Vitest](https://vitest.dev/) and [supertest](https://github.com/ladjs/supertest). No database or running server needed — `JWT_SECRET` is injected via the Vitest config.
 
 ```bash
@@ -252,4 +254,35 @@ yarn workspace @qred/backend test:unit
 yarn workspace @qred/backend test:integration
 ```
 
-> Tests for the auth middleware and route-level auth enforcement were written with [Claude](https://claude.ai/code).
+**What's covered:**
+- `expressAuth` middleware — missing token, invalid token, valid token attaches `req.auth`
+- Route auth enforcement — all four routes return 401 without a valid Bearer token
+- `POST /cards/activate` — 400 on missing or non-UUID `cardId`
+- Route 200 responses with mocked services — no live database needed in CI
+
+---
+
+### Frontend
+
+Component and utility tests run with [Vitest](https://vitest.dev/) and [Testing Library](https://testing-library.com/) in a jsdom environment.
+
+```bash
+# Run all tests
+yarn workspace @qred/frontend test
+
+# Watch mode
+yarn workspace @qred/frontend test:watch
+
+# Utility tests only
+yarn workspace @qred/frontend test:unit
+
+# Component tests only
+yarn workspace @qred/frontend test:component
+```
+
+**What's covered:**
+- `formatAmount` — öre-to-SEK conversion, sv-SE locale formatting, negatives
+- `formatCurrency` — two decimal places, SEK suffix vs currency code passthrough
+- `CreditCard` — last4Digits rendering, MM/YY expiry format, invoice badge visibility
+
+> Tests were written with assistance from [Claude](https://claude.ai/code).
