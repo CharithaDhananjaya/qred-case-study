@@ -1,7 +1,11 @@
-import { describe, it } from 'vitest'
+import { describe, it, vi } from 'vitest'
 import request from 'supertest'
 import { app } from '../../app'
 import { signToken, TEST_COMPANY_ID } from '../../test/helpers'
+
+vi.mock('../../services/invoices.service', () => ({
+  getInvoice: vi.fn().mockResolvedValue(null),
+}))
 
 describe('GET /invoice', () => {
   it('returns 401 when no Authorization header is provided', async () => {
