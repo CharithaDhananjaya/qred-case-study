@@ -4,7 +4,8 @@ import { formatAmount, formatCurrency } from '../utils'
 // sv-SE uses narrow no-break space (U+202F) or non-breaking space (U+00A0)
 // as thousands separator, and Unicode minus (U+2212) for negatives.
 // Normalise all variants for readable assertions.
-const normalise = (s: string) => s.replace(/[  ]/g, ' ').replace(/−/g, '-')
+const normalise = (s: string) =>
+  s.replace(/[  ]/g, ' ').replace(/−/g, '-')  // eslint-disable-line no-irregular-whitespace
 
 describe('formatAmount', () => {
   it('converts öre to SEK by dividing by 100', () => {
