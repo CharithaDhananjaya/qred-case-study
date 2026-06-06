@@ -83,3 +83,25 @@ curl http://localhost:4000/dashboard \
 ```
 
 Expected response while services are still being implemented: `{ "message": "coming soon" }`
+
+---
+
+## 🧪 Tests
+
+Unit and integration tests run with [Vitest](https://vitest.dev/) and [supertest](https://github.com/ladjs/supertest). No database or running server needed — `JWT_SECRET` is injected via the Vitest config.
+
+```bash
+# Run all tests
+yarn workspace @qred/backend test
+
+# Watch mode
+yarn workspace @qred/backend test:watch
+
+# Unit tests only
+yarn workspace @qred/backend test:unit
+
+# Integration tests only
+yarn workspace @qred/backend test:integration
+```
+
+> Tests for the auth middleware and route-level auth enforcement were written with [Claude](https://claude.ai/code).
