@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@theme {
+  --color-qred-dark: #0f2c2f;
+  --color-qred-light: #ddfed9;
+  --color-qred-light-muted: #c8f0c3;
+
+  /* screens */
+  --breakpoint-xs: 410px;
+}
