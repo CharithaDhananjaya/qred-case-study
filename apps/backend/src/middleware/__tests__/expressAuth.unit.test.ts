@@ -7,8 +7,8 @@ function mockReq(authorization?: string): Request {
   return { headers: { authorization } } as Request
 }
 
-function mockRes(): Response & { locals: Record<string, unknown> } {
-  return { locals: {} } as Response & { locals: Record<string, unknown> }
+function mockRes(): Response {
+  return {} as Response
 }
 
 describe('expressAuth', () => {
@@ -26,9 +26,9 @@ describe('expressAuth', () => {
     expressAuth(mockReq('Bearer invalid.token.here'), mockRes(), next)
   })
 
-  it('attaches AuthContext to res.locals and calls next() on a valid token', () => {
+  it('attaches AuthContext to req.auth and calls next() on a valid token', () => {
     const token = signToken(TEST_COMPANY_ID)
-    const res = mockRes()
+    const req = mockReq(`Bearer ${token}`)
     let called = false
 
     const next: NextFunction = (err?: unknown) => {
@@ -36,10 +36,10 @@ describe('expressAuth', () => {
       called = true
     }
 
-    expressAuth(mockReq(`Bearer ${token}`), res, next)
+    expressAuth(req, mockRes(), next)
 
     expect(called).toBe(true)
-    expect(res.locals.auth).toMatchObject({
+    expect(req.auth).toMatchObject({
       companyId: TEST_COMPANY_ID,
       role: 'owner',
     })

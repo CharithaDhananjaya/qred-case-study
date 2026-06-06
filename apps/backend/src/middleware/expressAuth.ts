@@ -24,7 +24,7 @@ export const expressAuth = (req: Request, res: Response, next: NextFunction): vo
 
   try {
     const payload = jwt.verify(token, secret) as JwtPayload
-    res.locals.auth = {
+    req.auth = {
       userId:    payload.sub,
       companyId: payload.companyId,
       role:      payload.role,
