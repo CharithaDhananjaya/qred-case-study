@@ -6,7 +6,12 @@ A full-stack company dashboard for Qred's credit card product.
 
 ## 📋 Contents
 
-- [⚙️ Backend architecture](#️-backend-architecture)
+- [🚀 Getting started locally](#-getting-started-locally)
+  - [Option A — Full Docker](#option-a--full-docker-recommended)
+  - [Option B — Native dev](#option-b--native-dev-postgres-via-docker-only)
+- [⚙️ Architecture](#️-architecture)
+  - [Backend](#backend)
+  - [Frontend](#frontend)
 - [🗄️ Database](#️-database)
   - [Schema](#schema)
   - [Local setup](#local-setup)
@@ -19,7 +24,75 @@ A full-stack company dashboard for Qred's credit card product.
 
 ---
 
-## ⚙️ Backend architecture
+## 🚀 Getting started locally
+
+**Prerequisites:** Node 24, Docker, Yarn (via Corepack)
+
+```bash
+corepack enable
+yarn install
+cp .env.example .env
+```
+
+Edit `.env` — set `JWT_SECRET` to a long random string (`openssl rand -hex 32`) and set `NEXT_PUBLIC_API_TOKEN` after the step below.
+
+---
+
+### Option A — Full Docker (recommended)
+
+Runs Postgres, backend, and frontend all in containers.
+
+```bash
+docker compose up -d
+```
+
+Wait a few seconds for the Postgres healthcheck, then seed the database:
+
+```bash
+yarn workspace @qred/backend db:migrate
+yarn workspace @qred/backend db:seed
+```
+
+Generate a dev token and add it to `.env` as `NEXT_PUBLIC_API_TOKEN`:
+
+```bash
+yarn workspace @qred/backend token:generate
+# then: docker compose restart frontend
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+---
+
+### Option B — Native dev (Postgres via Docker only)
+
+```bash
+cp apps/backend/.env.local.example apps/backend/.env.local
+cp apps/frontend/.env.local.example apps/frontend/.env.local
+```
+
+Set `JWT_SECRET` in `apps/backend/.env.local`, then:
+
+```bash
+# Start only the database
+docker compose up -d postgres
+
+yarn workspace @qred/backend db:migrate
+yarn workspace @qred/backend db:seed
+
+# Terminal 1
+yarn workspace @qred/backend dev    # http://localhost:4000
+
+# Terminal 2 — generate token, add to apps/frontend/.env.local as NEXT_PUBLIC_API_TOKEN
+yarn workspace @qred/backend token:generate
+yarn workspace @qred/frontend dev   # http://localhost:3000
+```
+
+---
+
+## ⚙️ Architecture
+
+### Backend
 
 The backend runs in two modes from the same codebase — no duplication of business logic.
 
@@ -35,7 +108,40 @@ The backend runs in two modes from the same codebase — no duplication of busin
       └── handler.ts         one export per Lambda function, calls services
 ```
 
-Both paths share the same service and query layers (coming in feature PRs). Swapping between them is a matter of entry point only — `server.ts` for local, `handler.ts` exports for Lambda.
+Both paths share the same service and query layers. Swapping between them is a matter of entry point only — `server.ts` for local, `handler.ts` exports for Lambda.
+
+---
+
+### Frontend
+
+Built with Next.js 15 App Router. Data is fetched server-side on the dashboard page — no client-side API calls on initial load. Drawers use Next.js parallel routes (`@modal` slot + intercepting routes) so they open as overlays on in-app navigation but render as standalone full pages on direct URL access.
+
+```
+app/
+  page.tsx                      Landing page
+  layout.tsx                    Root layout
+  dashboard/
+    layout.tsx                  Accepts { children, modal } — renders modal slot alongside page
+    page.tsx                    Server component — fetches dashboard data, renders DashboardView
+    transactions/
+      page.tsx                  Full-page transaction list (direct URL access)
+    invoice/
+      page.tsx                  Full-page invoice view (direct URL access)
+    @modal/
+      default.tsx               Renders null when no modal is active
+      (.)transactions/
+        page.tsx                Intercepted route — renders as drawer overlay
+      (.)invoice/
+        page.tsx                Intercepted route — renders as drawer overlay
+components/
+  dashboard/                    CreditCard, ActionButtons, TransactionList, CreditLimitSection
+  BottomDrawer.tsx              Shared drawer shell
+actions/
+  card.actions.ts               'use server' — activateCard server action
+lib/
+  api.ts                        Typed fetch wrappers (server-side)
+  utils.ts                      formatAmount, formatCurrency, cn
+```
 
 ---
 
