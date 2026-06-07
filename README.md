@@ -6,6 +6,11 @@ A full-stack company dashboard for Qred's credit card product.
 
 ## 📋 Contents
 
+- [🧭 Overview](#-overview)
+  - [Deliverables](#deliverables)
+  - [Timeline](#timeline)
+  - [Tools & references](#tools--references)
+  - [Approach & shortcuts](#approach--shortcuts)
 - [🚀 Getting started locally](#-getting-started-locally)
   - [Option A — Full Docker](#option-a--full-docker-recommended)
   - [Option B — Native dev](#option-b--native-dev-postgres-via-docker-only)
@@ -21,6 +26,48 @@ A full-stack company dashboard for Qred's credit card product.
 - [🔐 Auth](#-auth)
 - [🚀 Local auth setup](#-local-auth-setup)
 - [🧪 Tests](#-tests)
+
+---
+
+## 🧭 Overview
+
+### Deliverables
+
+| Task | Description | Link |
+|------|-------------|------|
+| Task 1 — Strategy & Collaboration Proposal | Short presentation on improving frontend/backend collaboration, API planning, and PM alignment | [View presentation](https://main.d8bbch8q6eqth.amplifyapp.com/presentation) |
+| Task 2 — Full-stack implementation | Company dashboard with real backend, database, AWS deployment, and tests | [Live demo](https://main.d8bbch8q6eqth.amplifyapp.com/) |
+
+---
+
+### Timeline
+
+| Phase | Activities | Duration |
+|-------|-----------|----------|
+| Planning & exploration | Warming up with AWS  (RDS, Lambda, Amplify, SSM), architecture, try outs, checks, data contract design | ~3 h |
+| Implementation, debugging & deploy | 12 PRs — monorepo scaffold → shared types → infra config → auth → UI → database → feature slices → tests → Docker | ~7–8.5 h |
+| **Total** | | **~10–11.5 h** |
+
+---
+
+### Tools & references
+
+- [Claude Code](https://claude.ai/code) — primary development assistant throughout the project, including a detailed architecture and commit choreography plan prepared ahead of implementation
+- [Next.js documentation](https://nextjs.org/docs) — App Router, parallel routes, server actions, and Amplify deployment
+- [AWS documentation](https://docs.aws.amazon.com) — Lambda, API Gateway, RDS, Amplify, SSM Parameter Store
+- Personal monorepo templates — prior Yarn workspace scaffolds used as structural references
+
+---
+
+### Approach & shortcuts
+
+The project started with an exploration phase on a personal AWS account — working through Lambda, API Gateway, RDS, Amplify, and ECS hands-on to understand how the pieces fit together before writing a line of application code. While doing this, a detailed architecture plan and commit choreography were sketched out in markdown, then used as a guide throughout implementation.
+
+Once the plan was solid, existing monorepo scaffolds were used as structural references to bootstrap the Yarn workspace quickly and keep focus on the application logic rather than config.
+
+**Auth shortcut:** the Lambda endpoints use JWT verification, but the token is pre-generated via a script rather than issued through a proper login flow. This was a deliberate trade-off to stay focused on the core dashboard functionality within the available time. Given more time, a full JWT auth flow — token issuance, refresh, and expiry handling — would be the natural next step.
+
+**Seed data shortcut:** the database is populated via a manual seed script rather than through real user onboarding or an admin flow. Fixed UUIDs are used to keep the seed idempotent and to match the dev JWT token's `companyId`, allowing immediate API testing after setup. In production, data would be created through proper registration and onboarding flows.
 
 ---
 
