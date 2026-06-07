@@ -11,6 +11,7 @@ A full-stack company dashboard for Qred's credit card product.
   - [Timeline](#timeline)
   - [Tools & references](#tools--references)
   - [Approach & shortcuts](#approach--shortcuts)
+  - [Given more time...!](#given-more-time-the-following-would-be-the-natural-next-steps)
 - [🚀 Getting started locally](#-getting-started-locally)
   - [Option A — Full Docker](#option-a--full-docker-recommended)
   - [Option B — Native dev](#option-b--native-dev-postgres-via-docker-only)
@@ -45,8 +46,9 @@ A full-stack company dashboard for Qred's credit card product.
 
 | Phase | Activities | Duration |
 |-------|-----------|----------|
-| Planning & exploration | Warming up with AWS  (RDS, Lambda, Amplify, SSM), architecture, try outs, checks, data contract design | ~3 h |
-| Implementation, debugging & deploy | 12 PRs — monorepo scaffold → shared types → infra config → auth → UI → database → feature slices → tests → Docker | ~7–8.5 h |
+| Phase 0 — AWS exploration (Friday) | Hands-on AWS ramp-up: provisioning RDS instances, deploying Lambda functions via CLI, configuring API Gateway routes, setting up SSM Parameter Store secrets, and understanding VPC networking constraints | ~ 3/4 day |
+| Phase 1 — Planning & scaffolding | Architecture design, data contract definition, commit choreography plan in markdown; monorepo boilerplate setup with Yarn workspaces, shared types package, Drizzle schema, and Docker local environment | ~ 3.0 h |
+| Phase 2 — Implementation, testing & deploy | around 12 PRs — auth middleware → UI with dummy data → database migrations & seed → full-stack feature slices (dashboard, transactions, invoice, cards) → unit & integration tests → Docker setup & Amplify deployment | ~ 7–8.5 h |
 | **Total** | | **~10–11.5 h** |
 
 ---
@@ -69,6 +71,15 @@ Once the plan was solid, existing monorepo scaffolds were used as structural ref
 **Auth shortcut:** the Lambda endpoints use JWT verification, but the token is pre-generated via a script rather than issued through a proper login flow. This was a deliberate trade-off to stay focused on the core dashboard functionality within the available time. Given more time, a full JWT auth flow — token issuance, refresh, and expiry handling — would be the natural next step.
 
 **Seed data shortcut:** the database is populated via a manual seed script rather than through real user onboarding or an admin flow. Fixed UUIDs are used to keep the seed idempotent and to match the dev JWT token's `companyId`, allowing immediate API testing after setup. In production, data would be created through proper registration and onboarding flows.
+
+**Given more time, the following would be the natural next steps:**
+
+- **Full JWT auth flow** — proper login endpoint with token issuance, refresh tokens, and expiry handling rather than a pre-generated static token
+- **User registration & onboarding** — replace the seed script with real company and user creation flows
+- **End-to-end tests** — Playwright test suite covering the full dashboard flow: login → view card → activate → view transactions → pay invoice
+- **Error boundaries & loading states** — proper `error.tsx` and `loading.tsx` pages across all routes for a production-ready UX
+- **Card payment flow** — full invoice payment UI wired to a payment provider rather than the current status-only display
+- **CI/CD pipeline** — GitHub Actions workflow running lint, type-check, and the full test suite on every PR before merge
 
 ---
 
