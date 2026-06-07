@@ -83,11 +83,11 @@ export function TransactionDrawer({
               <span className="text-xs text-qred-dark/50">{tx.category}</span>
             )}
           </div>
-          <div className="flex items-center gap-3 shrink-0 ml-3">
+          <div className="flex items-center gap-2 shrink-0 ml-2">
             <span className="text-xs text-qred-dark/50">
               {new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(new Date(tx.createdAt))}
             </span>
-            <span className="text-sm font-medium text-qred-dark w-16 text-right">
+            <span className="text-sm font-medium text-qred-dark w-24 text-right">
               {formatCurrency(tx.amount, tx.currency)}
             </span>
           </div>

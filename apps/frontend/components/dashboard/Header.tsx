@@ -1,8 +1,11 @@
+'use client'
+
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 
 function HamburgerIcon() {
   return (
-    <div className="flex flex-col gap-[5px] cursor-pointer p-1">
+    <div className="flex flex-col gap-[5px] p-1">
       <div className="w-5 h-0.5 bg-qred-dark rounded-full" />
       <div className="w-5 h-0.5 bg-qred-dark rounded-full" />
       <div className="w-3.5 h-0.5 bg-qred-dark rounded-full" />
@@ -11,8 +14,21 @@ function HamburgerIcon() {
 }
 
 export function Header() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   return (
-    <div className="flex items-center justify-between py-3">
+    <div className="flex items-center justify-between py-3 relative" ref={ref}>
       <Image
         src="/qred-logo.png"
         alt="Qred"
@@ -20,7 +36,35 @@ export function Header() {
         height={40}
         className="rounded-lg"
       />
-      <HamburgerIcon />
+
+      <div className="relative">
+        <button onClick={() => setMenuOpen((o) => !o)} className="cursor-pointer">
+          <HamburgerIcon />
+        </button>
+
+        {menuOpen && (
+          <div className="absolute top-full right-0 mt-2 bg-white border border-qred-light rounded-2xl shadow-lg z-30 min-w-[220px] overflow-hidden">
+            <a
+              href="https://my.qred.se/login"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMenuOpen(false)}
+              className="block px-4 py-3 text-sm font-medium text-qred-dark hover:bg-qred-light transition-colors"
+            >
+              Login to business loan
+            </a>
+            <a
+              href="https://sparkonto.qred.se/authentication/auth"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMenuOpen(false)}
+              className="block px-4 py-3 text-sm font-medium text-qred-dark hover:bg-qred-light transition-colors border-t border-qred-light"
+            >
+              Login to savings account
+            </a>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
