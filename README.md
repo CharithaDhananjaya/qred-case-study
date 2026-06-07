@@ -75,6 +75,7 @@ Once the plan was solid, existing monorepo scaffolds were used as structural ref
 **Given more time, the following would be the natural next steps:**
 
 - **Full JWT auth flow** — proper login endpoint with token issuance, refresh tokens, and expiry handling rather than a pre-generated static token
+- **Next.js auth integration** — store the JWT in an httpOnly cookie, wire up Next.js middleware to validate the session on every request, and redirect unauthenticated users to a login page
 - **User registration & onboarding** — replace the seed script with real company and user creation flows
 - **End-to-end tests** — Playwright test suite covering the full dashboard flow: login → view card → activate → view transactions → pay invoice
 - **Error boundaries & loading states** — proper `error.tsx` and `loading.tsx` pages across all routes for a production-ready UX
