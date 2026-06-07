@@ -74,13 +74,15 @@ Once the plan was solid, existing monorepo scaffolds were used as structural ref
 
 **Given more time, the following would be the natural next steps:**
 
-- **Full JWT auth flow** — proper login endpoint with token issuance, refresh tokens, and expiry handling rather than a pre-generated static token
-- **Next.js auth integration** — store the JWT in an httpOnly cookie, wire up Next.js middleware to validate the session on every request, and redirect unauthenticated users to a login page
-- **User registration & onboarding** — replace the seed script with real company and user creation flows
-- **End-to-end tests** — Playwright test suite covering the full dashboard flow: login → view card → activate → view transactions → pay invoice
-- **Error boundaries & loading states** — proper `error.tsx` and `loading.tsx` pages across all routes for a production-ready UX
-- **Card payment flow** — full invoice payment UI wired to a payment provider rather than the current status-only display
-- **CI/CD pipeline** — GitHub Actions workflow running lint, type-check, and the full test suite on every PR before merge
+| Area | What's implemented | The gap | What we would implement |
+|---|---|---|---|
+| **JWT auth flow** | JWT verification on every Lambda endpoint | Token is pre-generated via a script — no login endpoint exists | Proper login endpoint with token issuance, refresh tokens, and expiry handling |
+| **Next.js auth integration** | API token passed as a bearer header from the frontend | No session management or protected routes | JWT stored in an httpOnly cookie; Next.js middleware validates the session on every request and redirects unauthenticated users |
+| **User registration & onboarding** | Seed script populates realistic dev data | No registration or onboarding flow | Real company and user creation flows replacing the seed script |
+| **Card activation** | POST request verified by JWT, updates card status in DB | Single DB column flip with no network coordination or identity re-verification | Step-up auth (PIN/biometric/OTP) before the request; idempotency key to prevent duplicate activations on retry; call to the card network (Visa/Mastercard/processor) — DB confirmed only after network ACK; post-activation push notification and email |
+| **End-to-end tests** | Unit and integration tests across backend services and frontend components | No E2E coverage of the full user journey | Playwright suite covering the full flow: login → view card → activate → view transactions → pay invoice |
+| **Error boundaries & loading states** | Placeholder data and loading handled at the component level | No `error.tsx` or `loading.tsx` pages | Proper error and skeleton loading pages across all routes |
+| **CI/CD pipeline** | Tests run locally via `yarn test` | No automated checks on PRs | GitHub Actions running lint, type-check, and the full test suite before merge |
 
 ---
 
