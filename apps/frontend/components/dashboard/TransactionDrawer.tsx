@@ -38,7 +38,7 @@ export function TransactionDrawer({
 
   useEffect(() => {
     if (initialHasMore) prefetchPage(2)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialHasMore])
 
   async function loadMore() {
     setLoading(true)
