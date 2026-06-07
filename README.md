@@ -15,6 +15,7 @@ A full-stack company dashboard for Qred's credit card product.
   - [Option A — Full Docker](#option-a--full-docker-recommended)
   - [Option B — Native dev](#option-b--native-dev-postgres-via-docker-only)
 - [⚙️ Architecture](#️-architecture)
+  - [AWS](#aws)
   - [Backend](#backend)
   - [Frontend](#frontend)
 - [🗄️ Database](#️-database)
@@ -138,6 +139,22 @@ yarn workspace @qred/frontend dev   # http://localhost:3000
 ---
 
 ## ⚙️ Architecture
+
+### AWS
+
+All production infrastructure runs in `eu-north-1` (Stockholm).
+
+![AWS Architecture](docs/aws-architecture.svg)
+
+| Service | Role |
+|---------|------|
+| AWS Amplify | Hosts the Next.js frontend with SSR — `WEB_COMPUTE` platform, auto-deploys on push to `main` |
+| API Gateway | HTTP API gateway — routes requests to the correct Lambda, handles CORS |
+| AWS Lambda | Four functions, one per endpoint — stateless, cold-start optimised with esbuild bundling via Serverless Framework |
+| Amazon RDS | PostgreSQL 15 in a private subnet — accessed by Lambda via VPC or public endpoint with SSL |
+| AWS SSM | Stores `JWT_SECRET` as a `SecureString` — retrieved by Lambda at cold start, not baked into the bundle |
+
+---
 
 ### Backend
 
