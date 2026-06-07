@@ -24,12 +24,21 @@ export default function HomePage() {
           </p>
         </div>
 
-        <Link
-          href="/dashboard"
-          className="w-full bg-qred-dark text-qred-light text-sm font-semibold rounded-2xl py-4 text-center"
-        >
-          Go to dashboard
-        </Link>
+        <div className="flex flex-col gap-3 w-full">
+          <Link
+            href="/dashboard"
+            className="w-full bg-qred-dark text-qred-light text-sm font-semibold rounded-2xl py-4 text-center"
+          >
+            Go to dashboard
+          </Link>
+
+          <Link
+            href="/presentation"
+            className="w-full border border-qred-dark text-qred-dark text-sm font-semibold rounded-2xl py-4 text-center"
+          >
+            Strategy &amp; Collaboration Proposal
+          </Link>
+        </div>
 
       </div>
     </main>
