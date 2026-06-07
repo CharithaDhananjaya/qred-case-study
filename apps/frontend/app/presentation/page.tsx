@@ -2,7 +2,7 @@ export default function PresentationPage() {
   return (
     <main className="min-h-screen bg-qred-dark flex flex-col">
       <div className="flex items-center px-6 py-4 shrink-0">
-        <h1 className="text-qred-light text-sm font-semibold">
+        <h1 className="text-qred-light text-xl font-light">
           Strategy &amp; Collaboration Proposal
         </h1>
       </div>
