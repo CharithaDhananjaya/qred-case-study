@@ -40,6 +40,14 @@ export const invoiceHandler = async (event: APIGatewayEvent) => {
   }
 }
 
+/**
+ * Lambda handler for GET /cards/{id}
+ *
+ * Returns card details for a specific card belonging to the authenticated company.
+ * Validates that `id` is a UUID before hitting the database to avoid unnecessary query load.
+ * `companyId` is always derived from the verified JWT — never from the URL path — to prevent
+ * IDOR attacks where a caller could access another company's card by changing the path parameter.
+ */
 export const getCardHandler = async (event: APIGatewayEvent) => {
   try {
     const cardId = event.pathParameters?.id
@@ -52,6 +60,14 @@ export const getCardHandler = async (event: APIGatewayEvent) => {
   }
 }
 
+/**
+ * Lambda handler for POST /cards/activate
+ *
+ * Activates a card for the authenticated company. `cardId` is read from the request body —
+ * not the URL path — so it is never captured in API Gateway access logs or CloudWatch request
+ * records. Card IDs in logs could be combined with other signals to enumerate cards across
+ * companies; keeping sensitive identifiers out of the URL is a deliberate security practice.
+ */
 export const activateCardHandler = async (event: APIGatewayEvent) => {
   try {
     const body   = JSON.parse(event.body ?? '{}')
