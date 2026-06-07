@@ -1,7 +1,6 @@
-import Link from 'next/link'
 import type { Transaction } from '@qred/shared'
-import { ChevronRight } from '@/components/ui/icons'
 import { formatCurrency } from '@/lib/utils'
+import { ViewMoreButton } from './ViewMoreButton'
 
 export function TransactionList({
   transactions,
@@ -37,15 +36,7 @@ export function TransactionList({
         ))}
       </div>
 
-      {remaining > 0 && (
-        <Link
-          href="/dashboard/transactions"
-          className="flex items-center justify-between w-full border border-qred-light-muted rounded-xl px-4 py-2 mt-1 text-sm font-medium text-qred-dark"
-        >
-          <span>{remaining} more items in transaction view</span>
-          <ChevronRight className="text-qred-dark" />
-        </Link>
-      )}
+      {remaining > 0 && <ViewMoreButton remaining={remaining} />}
     </div>
   )
 }
