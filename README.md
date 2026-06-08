@@ -72,6 +72,8 @@ Once the plan was solid, existing monorepo scaffolds were used as structural ref
 
 **Seed data shortcut:** the database is populated via a manual seed script rather than through real user onboarding or an admin flow. Fixed UUIDs are used to keep the seed idempotent and to match the dev JWT token's `companyId`, allowing immediate API testing after setup. In production, data would be created through proper registration and onboarding flows.
 
+**Chrome mobile / bfcache fix:** the "View more transactions" button originally used React's `useTransition` hook to track loading state. This worked in Safari but left the spinner stuck indefinitely on Chrome mobile — Chrome's aggressive bfcache snapshots the page mid-transition and restores it with the pending flag still set, and its JS scheduler is more likely to stall React's concurrent internals while waiting on a server fetch. The fix replaces `useTransition` with plain `useState` and resets the flag in a `useEffect` watching `usePathname` — tying the reset to the URL rather than React's internal scheduler, so it recovers correctly after any navigation or bfcache restore.
+
 **Given more time, the following would be the natural next steps:**
 
 | Area | What's implemented | The gap | What we would implement |
