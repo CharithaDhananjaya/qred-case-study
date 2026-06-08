@@ -1,17 +1,21 @@
 'use client'
 
-import { useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import { ChevronRight } from '@/components/ui/icons'
 
 export function ViewMoreButton({ remaining }: { remaining: number }) {
   const router = useRouter()
-  const [isPending, startTransition] = useTransition()
+  const pathname = usePathname()
+  const [isPending, setIsPending] = useState(false)
+
+  useEffect(() => {
+    setIsPending(false)
+  }, [pathname])
 
   function handleClick() {
-    startTransition(() => {
-      router.push('/dashboard/transactions')
-    })
+    setIsPending(true)
+    router.push('/dashboard/transactions')
   }
 
   return (
