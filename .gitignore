@@ -10,3 +10,7 @@ build
 .serverless
 *.tsbuildinfo
 next-env.d.ts
+apps/qred-scout/docs-output/
+apps/qred-scout/start.sh
+.mcp.json
+pinecone.txt

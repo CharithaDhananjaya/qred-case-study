@@ -75,4 +75,4 @@ resources:
   Outputs:
     ApiGatewayUrl:
       Value: !Sub 'https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${self:provider.stage}'
-      Description: API Gateway base URL — set as NEXT_PUBLIC_API_URL in frontend 
+      Description: API Gateway base URL — set as NEXT_PUBLIC_API_URL in frontend
