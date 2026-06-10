@@ -3,19 +3,19 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "deploy:dev": "cd .. && serverless deploy --stage dev",
-    "deploy:prod": "cd .. && serverless deploy --stage prod",
-    "remove:dev": "cd .. && serverless remove --stage dev",
-    "offline": "cd .. && serverless offline --stage dev",
-    "logs:dashboard": "cd .. && serverless logs --function dashboard --stage dev --tail",
-    "logs:transactions": "cd .. && serverless logs --function transactions --stage dev --tail",
-    "logs:activateCard": "cd .. && serverless logs --function activateCard --stage dev --tail",
-    "info": "cd .. && serverless info --stage dev"
+    "deploy:dev": "cdk deploy --context stage=dev --require-approval never",
+    "deploy:prod": "cdk deploy --context stage=prod",
+    "destroy:dev": "cdk destroy --context stage=dev",
+    "diff:dev": "cdk diff --context stage=dev",
+    "diff:prod": "cdk diff --context stage=prod",
+    "synth": "cdk synth",
+    "list": "cdk list"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0",
-    "serverless": "^3.38.0",
-    "serverless-esbuild": "^1.52.0",
-    "serverless-offline": "^13.3.0"
+    "aws-cdk": "^2.180.0",
+    "aws-cdk-lib": "^2.180.0",
+    "constructs": "^10.4.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }
