@@ -98,7 +98,7 @@ yarn install
 cp .env.example .env
 ```
 
-Edit `.env` — set `JWT_SECRET` to a long random string (`openssl rand -hex 32`) and set `NEXT_PUBLIC_API_TOKEN` after the step below.
+Edit `.env` — set `JWT_SECRET` to a long random string (`openssl rand -hex 32`) and set `API_TOKEN` after the step below.
 
 ---
 
@@ -117,7 +117,7 @@ yarn workspace @qred/backend db:migrate
 yarn workspace @qred/backend db:seed
 ```
 
-Generate a dev token and add it to `.env` as `NEXT_PUBLIC_API_TOKEN`:
+Generate a dev token and add it to `.env` as `API_TOKEN`:
 
 ```bash
 yarn workspace @qred/backend token:generate
@@ -147,7 +147,7 @@ yarn workspace @qred/backend db:seed
 # Terminal 1
 yarn workspace @qred/backend dev    # http://localhost:4000
 
-# Terminal 2 — generate token, add to apps/frontend/.env.local as NEXT_PUBLIC_API_TOKEN
+# Terminal 2 — generate token, add to apps/frontend/.env.local as API_TOKEN
 yarn workspace @qred/backend token:generate
 yarn workspace @qred/frontend dev   # http://localhost:3000
 ```
@@ -472,3 +472,146 @@ yarn workspace @qred/frontend test:component
 - `CreditCard` — last4Digits rendering, MM/YY expiry format, invoice badge visibility
 
 > Tests were written with assistance from [Claude](https://claude.ai/code).
+
+---
+
+## 🔒 HttpOnly cookie auth (feature branch)
+
+Branch: `feature/httponly-cookie-auth`
+
+This branch replaces the `NEXT_PUBLIC_API_TOKEN` approach — where the JWT was embedded in the browser bundle — with a proper session cookie flow. The Next.js server acts as a BFF (Backend For Frontend): the JWT never leaves the server, and the browser only ever holds an opaque HttpOnly cookie.
+
+---
+
+### What changed
+
+| Before | After |
+|---|---|
+| `NEXT_PUBLIC_API_TOKEN` — JWT in browser bundle, readable by any user | `API_TOKEN` — server-only env var, never sent to client |
+| `NEXT_PUBLIC_API_URL` — backend URL exposed to browser | `API_URL` — server-only |
+| `TransactionDrawer` called a Server Action (HTTP POST) for reads | `TransactionDrawer` fetches `GET /api/transactions` — browser sends cookie automatically, no token in JS |
+| No protected routes | `middleware.ts` redirects unauthenticated users from `/dashboard` to `/login` |
+
+---
+
+### Request flow
+
+```
+Browser                  Next.js server               Backend (Express / Lambda)
+  │                           │                           │
+  ├─ POST /api/auth/login ──► │  validate credentials     │
+  │  { username, password }   ├─ set session cookie ──────┤
+  │                           │  httpOnly, secure, lax    │
+  │  ◄──────────────────────  │                           │
+  │                           │                           │
+  ├─ GET /dashboard ────────► │  middleware: cookie?  ✓   │
+  │                           ├─ GET /dashboard ─────────►│
+  │  (cookie sent auto)       │  Authorization: Bearer …  │
+  │  ◄────────────────────────│ ◄─────────────────────────┤
+  │                           │                           │
+  ├─ GET /api/transactions ──►│  reads cookie server-side │
+  │  (cookie sent auto)       ├─ GET /transactions ──────►│
+  │  ◄────────────────────────│ ◄─────────────────────────┤
+```
+
+---
+
+### New files
+
+| File | Purpose |
+|------|---------|
+| `middleware.ts` | Protects `/dashboard/*` — redirects to `/login` if no `session` cookie present |
+| `lib/server-session.ts` | Single utility to read the `session` cookie — used by Server Components, Server Actions, and Route Handlers |
+| `app/login/page.tsx` | Login UI styled with the Qred design system |
+| `app/api/auth/login/route.ts` | `POST` — validates credentials, sets `session` HttpOnly cookie |
+| `app/api/auth/logout/route.ts` | `POST` — deletes the `session` cookie |
+| `app/api/transactions/route.ts` | `GET` — BFF proxy: reads cookie server-side, forwards to backend with `Authorization` header |
+
+### Modified files
+
+| File | Change |
+|------|--------|
+| `lib/api.ts` | Reads token via `getSessionToken()` instead of `NEXT_PUBLIC_API_TOKEN` |
+| `actions/card.actions.ts` | Same — uses `getSessionToken()` |
+| `actions/transaction.actions.ts` | Same — uses `getSessionToken()` |
+| `components/dashboard/TransactionDrawer.tsx` | Client-side pagination now fetches `GET /api/transactions` instead of calling a Server Action |
+| `components/dashboard/Header.tsx` | Adds a "Sign out" item to the hamburger menu |
+| `apps/frontend/.env.local` | Replaces `NEXT_PUBLIC_*` vars with `API_URL`, `API_TOKEN`, `DEMO_USERNAME`, `DEMO_PASSWORD` |
+
+---
+
+### Local setup
+
+```bash
+git checkout feature/httponly-cookie-auth
+```
+
+Edit `apps/frontend/.env.local` — the keys have changed:
+
+```env
+# Server-only — no NEXT_PUBLIC_ prefix
+API_URL=http://localhost:4000
+
+# Demo login credentials
+DEMO_USERNAME=demo
+DEMO_PASSWORD=password
+
+# Generate with: yarn workspace @qred/backend token:generate
+API_TOKEN=<token>
+```
+
+Start the app as normal, then open [http://localhost:3000/login](http://localhost:3000/login) and sign in with `demo` / `password`.
+
+---
+
+### Production path
+
+The login Route Handler currently validates a hardcoded demo credential from env vars, then sets the pre-generated `API_TOKEN` as the session cookie. In production, replace that logic with a `POST` to the backend's `/auth/login` endpoint — the backend issues the JWT, Next.js sets it as the HttpOnly cookie, and the rest of the architecture is unchanged.
+
+---
+
+## 🔑 Per-login token issuance (next step)
+
+The current setup uses a single static JWT — every session receives the same token copied from the `API_TOKEN` env var. To issue a fresh, user-scoped token on every login the following changes are needed.
+
+---
+
+### What needs to change
+
+**1. Add a `users` table to the database**
+
+The backend has no credential store today. A `users` table (or an extension to `companies`) is needed with at minimum `email` and `password_hash` (bcrypt). The existing seeded `companyId` would be linked to a real user row.
+
+**2. Add `POST /auth/login` to the backend**
+
+This endpoint would:
+- Accept `{ email, password }` in the request body
+- Look up the user by email and verify the password against the stored hash with bcrypt
+- On success, sign and return a fresh JWT — `{ sub: userId, companyId, role, exp: 7d }` — using `JWT_SECRET`
+- On failure, return `401` with a generic message — never reveal whether the email or the password was wrong
+
+**3. Update the Next.js login Route Handler**
+
+`app/api/auth/login/route.ts` currently reads `process.env.API_TOKEN`. Instead it would:
+- Forward the submitted credentials to `POST <API_URL>/auth/login`
+- Receive the fresh JWT from the backend response body
+- Set *that* token as the HttpOnly session cookie
+
+The rest of the Next.js auth layer — middleware, `server-session.ts`, the transactions proxy, the BFF pattern — stays exactly as it is.
+
+**4. Add refresh token support (recommended for production)**
+
+A 7-day access token is long-lived. The proper production pattern is:
+
+| Token | Lifetime | Storage | Purpose |
+|---|---|---|---|
+| Access token | 15 min | HttpOnly cookie | Sent with every API request |
+| Refresh token | 30 days | HttpOnly cookie or DB | Used to silently issue a new access token |
+
+This requires two additional backend endpoints — `POST /auth/refresh` and `POST /auth/logout` (to revoke the refresh token) — and a check in `middleware.ts` that calls `/auth/refresh` when the access token is near expiry.
+
+---
+
+### Summary
+
+The Next.js side (cookie handling, middleware, proxy routes, BFF pattern) requires **no structural changes** to support per-login tokens. The work is entirely in the backend: a credential store, a login endpoint, and optionally a refresh endpoint.

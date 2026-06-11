@@ -50,8 +50,10 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://backend:${PORT}
-      NEXT_PUBLIC_API_TOKEN: ${NEXT_PUBLIC_API_TOKEN}
+      API_URL: http://backend:${PORT}
+      API_TOKEN: ${API_TOKEN}
+      DEMO_USERNAME: ${DEMO_USERNAME}
+      DEMO_PASSWORD: ${DEMO_PASSWORD}
       WATCHPACK_POLLING: "true"
     volumes:
       - ./apps/frontend:/app/apps/frontend
