@@ -1,13 +1,14 @@
 'use server'
 
 import type { Card } from '@qred/shared'
+import { getSessionToken } from '@/lib/server-session'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000'
+const API_URL = process.env.API_URL ?? 'http://localhost:4000'
 
 type ActionResult<T> = { ok: true; data: T } | { ok: false; message: string }
 
 export async function activateCard(cardId: string): Promise<ActionResult<Card>> {
-  const token = process.env.NEXT_PUBLIC_API_TOKEN
+  const token = await getSessionToken()
   try {
     const res = await fetch(`${API_URL}/cards/activate`, {
       method: 'POST',
