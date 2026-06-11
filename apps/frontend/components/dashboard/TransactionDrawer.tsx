@@ -2,12 +2,17 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { Transaction } from '@qred/shared'
+import type { PaginatedTransactions, Transaction } from '@qred/shared'
 import { formatCurrency } from '@/lib/utils'
 import { BottomDrawer } from '@/components/ui/BottomDrawer'
-import { fetchTransactionsPage } from '@/actions/transaction.actions'
 
 const PAGE_SIZE = 10
+
+async function fetchTransactionsPage(page: number, limit: number): Promise<PaginatedTransactions> {
+  const res = await fetch(`/api/transactions?page=${page}&limit=${limit}`)
+  if (!res.ok) throw new Error(`Failed to fetch transactions (${res.status})`)
+  return res.json()
+}
 
 export function TransactionDrawer({
   initialTransactions,

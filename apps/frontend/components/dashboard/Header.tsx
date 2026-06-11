@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
 function HamburgerIcon() {
@@ -14,8 +15,15 @@ function HamburgerIcon() {
 }
 
 export function Header() {
+  const router    = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    router.push('/login')
+    router.refresh()
+  }
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -62,6 +70,12 @@ export function Header() {
             >
               Login to savings account
             </a>
+            <button
+              onClick={handleLogout}
+              className="block w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors border-t border-qred-light"
+            >
+              Sign out
+            </button>
           </div>
         )}
       </div>
